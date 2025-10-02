@@ -1,0 +1,2430 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUDO İdarəetmə Sistemi - 97 Məntəqə</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+    
+    <style>
+        :root {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #2c3e50;
+            --text-secondary: #374151;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --input-bg: #f9fafb;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3a3a3a;
+            --text-primary: #e5e7eb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-color: #404040;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            --input-bg: #3a3a3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Login Screen Styles */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+        }
+
+        .login-container {
+            background: var(--bg-secondary);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 90%;
+            max-width: 420px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .login-form {
+            margin-top: 2rem;
+        }
+
+        .login-form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .login-form-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .login-form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .login-form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+            color: #dc2626;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        #main-app {
+            display: none;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 4rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--bg-secondary);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-green { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .btn-orange { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+        .btn-red { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        .btn-gray { background: linear-gradient(135deg, #6b7280, #4b5563); color: white; }
+        
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 120px);
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem 1rem;
+            border-radius: 0.75rem;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            pointer-events: none;
+        }
+        
+        .stat-card.green { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-card.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .stat-card.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.95;
+            margin-top: 0.5rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-badge.temporarily_closed {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .status-badge.maintenance {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        [data-theme="dark"] .status-badge.active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        [data-theme="dark"] .status-badge.temporarily_closed {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        [data-theme="dark"] .status-badge.maintenance {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Search Styles */
+        .search-container {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.25rem 1rem 3rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 0.25rem;
+            background: var(--bg-tertiary);
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+        }
+        
+        .filter-tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.875rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-tab.active {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Lists */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .list-container {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.875rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            margin-bottom: 0.25rem;
+        }
+        
+        .list-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-color);
+            transform: translateX(2px);
+        }
+        
+        .list-item.active {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border-color: #3b82f6;
+            transform: translateX(4px);
+        }
+
+        [data-theme="dark"] .list-item.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2));
+        }
+        
+        .item-name {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        
+        .item-count {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        /* PUDO Type Badges */
+        .pudo-badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .pudo-badge.branch {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .pudo-badge.partner {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        [data-theme="dark"] .pudo-badge.branch {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        [data-theme="dark"] .pudo-badge.partner {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Location Items */
+        .location-item {
+            position: relative;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .location-item:hover {
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+        
+        .location-name {
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .location-details {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        
+        .location-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .action-btn-small {
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.375rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        [data-theme="dark"] .action-btn-small {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .action-btn-small:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-secondary);
+            transform: scale(1.05);
+        }
+
+        [data-theme="dark"] .action-btn-small:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Photo Display */
+        .location-photo {
+            width: 100%;
+            max-width: 200px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin: 0.75rem 0;
+            border: 2px solid var(--border-color);
+        }
+
+        .photo-preview {
+            width: 100%;
+            max-width: 300px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            border: 2px solid var(--border-color);
+        }
+        
+        /* Map Container */
+        .map-container {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        /* Map Legend */
+        .map-legend {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(10px);
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            border: 1px solid var(--border-color);
+        }
+        
+        .legend-title {
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0.75rem 0;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        
+        .legend-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            color: white;
+        }
+        
+        .legend-icon.branch { background: linear-gradient(135deg, #10b981, #059669); }
+        .legend-icon.partner { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        
+        /* Action Buttons */
+        .action-btn {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            font-size: 0.875rem;
+        }
+        
+        .action-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(16, 185, 129, 0.5);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: 90vh;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-group input.error,
+        .form-group textarea.error,
+        .form-group select.error {
+            border-color: #ef4444;
+        }
+        
+        .form-group input.error:focus,
+        .form-group textarea.error:focus,
+        .form-group select.error:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .close {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close:hover {
+            color: white;
+        }
+        
+        /* Message Styles */
+        .message {
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1rem 0;
+            font-weight: 600;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .message.error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .message.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+            color: #d97706;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        /* Custom Popup Styles */
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            background: #ffffff !important;
+        }
+        
+        .custom-popup .leaflet-popup-tip {
+            background: #ffffff !important;
+        }
+
+        .custom-popup .leaflet-popup-content {
+            color: #1f2937 !important;
+        }
+
+        /* Radius Tooltip Styles */
+        .radius-tooltip {
+            background: rgba(0, 0, 0, 0.85) !important;
+            border: 2px solid #3b82f6 !important;
+            border-radius: 0.5rem !important;
+            color: white !important;
+            font-weight: 600 !important;
+            font-size: 0.813rem !important;
+            padding: 0.5rem 0.75rem !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .radius-tooltip::before {
+            border-top-color: rgba(0, 0, 0, 0.85) !important;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .sidebar {
+                height: auto;
+                max-height: 500px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                height: auto;
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .logo-text {
+                font-size: 1.2rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .btn {
+                padding: 0.625rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .login-container {
+                padding: 2rem;
+            }
+        }
+        
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f3f4f6;
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* File Input Custom Style */
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 0.875rem;
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--border-color);
+            border-radius: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .file-input-label:hover {
+            border-color: #3b82f6;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-container">
+            <div class="login-logo">
+                <div class="login-logo-icon">P</div>
+                <div class="login-title">PUDO İdarəetmə</div>
+                <div class="login-subtitle">Sistemə daxil olmaq üçün şifrə daxil edin</div>
+            </div>
+            
+            <div id="login-error" class="login-error">
+                Şifrə yanlışdır! Yenidən cəhd edin.
+            </div>
+            
+            <form id="login-form" class="login-form">
+                <div class="login-form-group">
+                    <label for="password">Şifrə</label>
+                    <input type="password" id="password" placeholder="Şifrəni daxil edin" required autofocus>
+                </div>
+                <button type="submit" class="login-btn">Daxil Ol</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="main-app">
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">P</div>
+                    <h1 class="logo-text">PUDO İdarəetmə Sistemi</h1>
+                </div>
+                
+                <div class="header-buttons">
+                    <button class="theme-toggle" id="theme-toggle" title="Dark Mode">
+                        <span id="theme-icon">🌙</span>
+                    </button>
+                    <button class="btn btn-green" id="add-pudo-btn">
+                        <span>+ Yeni PUDO</span>
+                    </button>
+                    <button class="btn btn-orange" id="export-btn">
+                        <span>Export</span>
+                    </button>
+                    <button class="btn btn-red" id="refresh-btn">
+                        <span>Yenilə</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card green">
+                        <div class="stat-number" id="branch-count">27</div>
+                        <div class="stat-label">Branch</div>
+                    </div>
+                    <div class="stat-card purple">
+                        <div class="stat-number" id="partner-count">70</div>
+                        <div class="stat-label">Partner</div>
+                    </div>
+                    <div class="stat-card blue">
+                        <div class="stat-number" id="total-count">97</div>
+                        <div class="stat-label">Toplam</div>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="search-container">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" id="search-input" placeholder="PUDO axtarın..." class="search-input">
+                </div>
+
+                <!-- Action Button -->
+                <button class="action-btn" id="show-all-btn">
+                    🗺️ Hamısını Göstər (97 PUDO)
+                </button>
+
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="types">Növlər</button>
+                    <button class="filter-tab" data-filter="cities">Şəhər/Rayon</button>
+                    <button class="filter-tab" data-filter="status">Status</button>
+                </div>
+
+                <!-- Types Section -->
+                <div id="types-section" style="display: block;">
+                    <h3 class="section-title">Növlər</h3>
+                    <div id="types-list" class="list-container"></div>
+                </div>
+
+                <!-- Cities Section -->
+                <div id="cities-section" style="display: none;">
+                    <h3 class="section-title">Şəhər/Rayon</h3>
+                    <div id="cities-list" class="list-container"></div>
+                </div>
+
+                <!-- Status Section -->
+                <div id="status-section" style="display: none;">
+                    <h3 class="section-title">Status</h3>
+                    <div id="status-list" class="list-container"></div>
+                </div>
+
+                <!-- Validation Panel -->
+                <div>
+                    <h3 class="section-title">Əməliyyat Analizi</h3>
+                    
+                    <!-- Proximity Threshold Control -->
+                    <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                        <label style="display: block; font-weight: 600; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                            Minimum Məsafə Limiti
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <input type="range" id="proximity-threshold" min="0.5" max="5" step="0.5" value="1" 
+                                   style="flex: 1; accent-color: #3b82f6;">
+                            <span id="threshold-value" style="font-weight: 700; color: #3b82f6; min-width: 3rem; text-align: right;">1.0 km</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                            <input type="checkbox" id="show-radius" style="width: 1rem; height: 1rem; cursor: pointer;">
+                            <label for="show-radius" style="font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">Xəritədə radiusları göstər</label>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <button class="btn btn-blue" id="proximity-check-btn" style="width: 100%; padding: 0.5rem; font-size: 0.875rem;">
+                            Məsafə Yoxlaması
+                        </button>
+                        <button class="btn btn-purple" id="coverage-analysis-btn" style="width: 100%; padding: 0.5rem; font-size: 0.875rem;">
+                            Əhatə Analizi
+                        </button>
+                        <button class="btn btn-orange" id="density-analysis-btn" style="width: 100%; padding: 0.5rem; font-size: 0.875rem;">
+                            Sıxlıq Analizi
+                        </button>
+                    </div>
+                    <div id="analysis-results" style="margin-top: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 0.5rem; font-size: 0.875rem; display: none;"></div>
+                </div>
+
+                <!-- Locations List -->
+                <div>
+                    <h3 class="section-title">Məntəqələr</h3>
+                    <div id="locations-list" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="map-container">
+                <div id="map"></div>
+                
+                <!-- Map Legend -->
+                <div class="map-legend">
+                    <div class="legend-title">PUDO Növləri</div>
+                    <div class="legend-item">
+                        <div class="legend-icon branch">B</div>
+                        <span>Branch (27)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon partner">P</div>
+                        <span>Partner (70)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit PUDO Modal -->
+    <div id="pudo-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Yeni PUDO Məntəqəsi</h2>
+                <span class="close" id="modal-close">×</span>
+            </div>
+            <div class="modal-body">
+                <form id="pudo-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="pudo-name">Məntəqə Adı *</label>
+                            <input type="text" id="pudo-name" name="name" required>
+                            <div class="error-message" id="name-error">Məntəqə adı tələb olunur</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pudo-type">PUDO Növü *</label>
+                            <select id="pudo-type" name="pudoType" required>
+                                <option value="">Seçin...</option>
+                                <option value="Branch">Branch</option>
+                                <option value="Partner">Partner</option>
+                            </select>
+                            <div class="error-message" id="type-error">PUDO növünü seçin</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pudo-location">Şəhər/Rayon *</label>
+                            <input type="text" id="pudo-location" name="location" placeholder="Bakı" required>
+                            <div class="error-message" id="location-error">Şəhər/rayon tələb olunur</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pudo-status">Status *</label>
+                            <select id="pudo-status" name="status" required>
+                                <option value="active">Aktiv</option>
+                                <option value="temporarily_closed">Müvəqqəti Bağlı</option>
+                                <option value="maintenance">Təmir</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pudo-owner">Sahibkarın Adı</label>
+                            <input type="text" id="pudo-owner" name="owner" placeholder="Ad Soyad">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pudo-phone">Əlaqə Nömrəsi</label>
+                            <input type="tel" id="pudo-phone" name="phone" placeholder="0501234567">
+                            <div class="error-message" id="phone-error">Telefon nömrəsi düzgün deyil (050xxxxxxx)</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pudo-hours">İş Saatları</label>
+                            <input type="text" id="pudo-hours" name="workingHours" placeholder="10:00-19:00">
+                            <div class="error-message" id="hours-error">Format: 10:00-19:00</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pudo-lat">Enlik (Lat) *</label>
+                            <input type="number" id="pudo-lat" name="lat" step="0.0000001" placeholder="40.4093" required>
+                            <div class="error-message" id="lat-error">Enlik Azərbaycan hüdudlarında olmalıdır (38-42)</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pudo-lng">Uzunluq (Lng) *</label>
+                            <input type="number" id="pudo-lng" name="lng" step="0.0000001" placeholder="49.8671" required>
+                            <div class="error-message" id="lng-error">Uzunluq Azərbaycan hüdudlarında olmalıdır (44-51)</div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="pudo-address">Ünvan *</label>
+                            <textarea id="pudo-address" name="address" placeholder="Tam ünvanı və yaxınlıqdakı obyektləri daxil edin" required></textarea>
+                            <div class="error-message" id="address-error">Ünvan tələb olunur (ən azı 10 simvol)</div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="pudo-notes">Qeydlər/Şərhlər</label>
+                            <textarea id="pudo-notes" name="notes" placeholder="Daxili qeydlər və ya əlavə məlumat..." rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="pudo-photo">Məntəqə Şəkli</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="pudo-photo" accept="image/*">
+                                <label for="pudo-photo" class="file-input-label">
+                                    📷 Şəkil seçin (JPG, PNG)
+                                </label>
+                            </div>
+                            <img id="photo-preview" class="photo-preview" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-gray" id="cancel-btn">Ləğv et</button>
+                        <button type="submit" class="btn btn-green" id="save-btn">Yadda saxla</button>
+                    </div>
+                    
+                    <div id="form-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script>
+        // Authentication
+        const AUTH_PASSWORD = '12345';
+        let isAuthenticated = false;
+        let currentTheme = 'light';
+
+        // Login form handler
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            if (password === AUTH_PASSWORD) {
+                isAuthenticated = true;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                window.pudoSystem = new PudoSystem();
+                console.log('Login successful! PUDO System initialized.');
+            } else {
+                errorDiv.classList.add('show');
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+                
+                setTimeout(() => {
+                    errorDiv.classList.remove('show');
+                }, 3000);
+            }
+        });
+
+        // Theme Toggle
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            document.getElementById('theme-icon').textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // All 97 PUDO locations with new fields
+        const PUDO_DATA = [
+            {"id":1,"name":"Quba","location":"Quba","pudoType":"Partner","owner":"Elşən Xaliqov","phone":"502102540","address":"Quba şəhəri Fətəli xan Xoyski küç.57  - THE  Perfum Shopun daxili ","lat":41.362089,"lng":48.509628,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":2,"name":"Qusar","location":"Qusar","pudoType":"Partner","owner":"İsayev Teymur","phone":"503032307","address":"Qusar şəhəri Dağıstan küç.5","lat":41.427091,"lng":48.43119,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":3,"name":"Xaçmaz","location":"Xaçmaz","pudoType":"Partner","owner":"Cəlilov Orxan","phone":"507199119","address":"Nəriman Nərimanov 47","lat":41.459265,"lng":48.796826,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":4,"name":"Şabran","location":"Şabran","pudoType":"Partner","owner":"Telman Quliyev","phone":"503663686","address":"3 Sotlar qəsəbəsi, H. Əliyev pr. 537C","lat":41.21419,"lng":49.00307,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":5,"name":"Salyan","location":"Salyan","pudoType":"Partner","owner":"Tağıyev Şəhriyar","phone":"559813737","address":"Yusif Qasımov 5, Salyan şəhəri","lat":39.5906279,"lng":48.9753672,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":6,"name":"Biləsuvar","location":"Biləsuvar","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"H. Əliyev pr.32A","lat":39.45372,"lng":48.544706,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":7,"name":"Neftçala","location":"Neftçala","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Neftçala şəhəri Heydər Əliyev pros.29A","lat":39.388838,"lng":49.246108,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":8,"name":"Saatlı","location":"Saatlı","pudoType":"Partner","owner":"Bayramov Vurğun","phone":"516023778","address":"Saatlı şəhəri Heydər Əliyev pros. 128B Kapital Bankın yaxınlığı","lat":39.939142,"lng":48.375082,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":9,"name":"Sabirabad","location":"SabirabadSabirabad","pudoType":"Partner","owner":"Şahin Ağayev","phone":"507310023","address":"Sabirabad şəhəri Muğan pros.2D","lat":39.990067,"lng":48.464123,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":10,"name":"Cəlilabad","location":"Cəlilabad","pudoType":"Partner","owner":"İbiyeva Arzu","phone":"556453816","address":"Mirzəli Hüseynzadə 12B","lat":39.213574,"lng":48.505618,"workingHours":"09:00-18:00","status":"active","notes":"","photo":""},
+            {"id":11,"name":"Masallı","location":"Masallı","pudoType":"Partner","owner":"İbadov Ramal","phone":"514312299","address":"Heydər Əliyev pr.504B","lat":39.03559,"lng":48.670531,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":12,"name":"Yardımlı","location":"Yardımlı","pudoType":"Partner","owner":"İbadov Ramal","phone":"514312299","address":"Yardımlı şəhəri Heydər Əliyev küç.96A Kapital Bankla üzbəüz","lat":38.90319,"lng":48.23653,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":13,"name":"Lerik","location":"Lerik","pudoType":"Partner","owner":"İbadov Ramal","phone":"514312299","address":"Lerik şəhəri Elmar Qasımov küç.68A","lat":38.77518,"lng":48.416325,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":14,"name":"Astara","location":"Astara","pudoType":"Partner","owner":"İbadov Ramal","phone":"514312299","address":"H.Əliyev pr.31","lat":38.470268,"lng":48.870248,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":15,"name":"Lənkəran","location":"Lənkəran","pudoType":"Partner","owner":"Əzizəliyev Elsəvər","phone":"504587898","address":"Qala Xiyabani 27A, Lənkəran şəh.","lat":38.758746,"lng":48.852426,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":16,"name":"Şamaxı","location":"Şamaxı","pudoType":"Partner","owner":"Toğrul Eyyubməyli","phone":"502117851","address":"Şamaxı şəhəri Gənclər küç.55","lat":40.633469,"lng":48.642527,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":17,"name":"İsmayıllı","location":"İsmayıllı","pudoType":"Partner","owner":"Abbasov Rəhim","phone":"553355307","address":"İsmayıllı Şəhəri M.F.Axundov küç.","lat":40.78516,"lng":48.14955,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":18,"name":"Qəbələ","location":"Qəbələ","pudoType":"Partner","owner":"Şirinov Fikrət","phone":"505965960","address":"H.Əliyev pr. (Darçın Parfüm mağazası)","lat":40.973392,"lng":47.841813,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":19,"name":"Hacıqabul","location":"Hacıqabul","pudoType":"Partner","owner":"Teymurov Elçin","phone":"556149933","address":"H.Əliyev pr.24A","lat":40.042444,"lng":48.934605,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":20,"name":"Ağsu","location":"Ağsu","pudoType":"Partner","owner":"Teyyubzadə Fərid","phone":"513949493","address":"Ağsu şəhəri Nizavi Gəncəvi küç 18B","lat":40.566368,"lng":48.390715,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":21,"name":"Ucar","location":"Ucar","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Heydər Əliyev pr. 36","lat":40.519945,"lng":47.649326,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":22,"name":"Göyçay","location":"Göyçay","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Əli Kərim 81C","lat":40.649604,"lng":47.739116,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":23,"name":"Orta Ləki","location":"Orta Ləki","pudoType":"Partner","owner":"Ümid Qasımov","phone":"050 890 09 82","address":"Ağdaş rayon Orta Ləki kəndi","lat":40.524408,"lng":47.413075,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":24,"name":"Ağdaş","location":"Ağdaş","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Mikayıl Müşviq küç","lat":40.6453066,"lng":47.4717452,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":25,"name":"Kürdəmir","location":"Kürdəmir","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Bakı pr.35","lat":40.3369,"lng":47.7575,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":26,"name":"Beyləqan","location":"Beyləqan","pudoType":"Partner","owner":"Orxan Cavadlı","phone":"508982371","address":"Beyləqan şəhəri Sabir İmralıyev küç.1","lat":39.771819,"lng":47.621274,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":27,"name":"İmişli","location":"İmişli","pudoType":"Partner","owner":"Əzizəliyev Elsəvər","phone":"504587898","address":"20 yanvar küç.","lat":39.870549,"lng":48.058624,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":28,"name":"Ağcabədi","location":"Ağcabədi","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Heydər Əliyev pros.","lat":40.048319,"lng":47.458315,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":29,"name":"Zərdab","location":"Zərdab","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Azərbaycan küç.122","lat":40.124656,"lng":47.707741,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":30,"name":"Yevlax","location":"Yevlax","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Yevlax şəhəri Nizami Gəncəvi pros.Ev 53","lat":40.615092,"lng":47.145554,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":31,"name":"Bərdə","location":"Bərdə","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Heydər Əliyev pr.4/2","lat":40.371719,"lng":47.126439,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":32,"name":"Füzuli","location":"Füzuli","pudoType":"Partner","owner":"Abdullayev Vaqif","phone":"518120291","address":"Füzuli rayonu Horadiz şəhəri M.Ə.Rəsulzadə küçəsiKapital bankın yanı","lat":39.447393,"lng":47.340081,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":33,"name":"Xankəndi","location":"Xankəndi","pudoType":"Partner","owner":"Orxan Beyləqan","phone":"508982371","address":"Xankəndi İcra Hakimiyyətinin yanı","lat":39.81591,"lng":46.751758,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":34,"name":"Ağdam","location":"Ağdam","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Ağdam rayonu Quzanlı qəsəbəsi","lat":40.157903,"lng":47.161207,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":35,"name":"Tərtər","location":"Tərtər","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Tərtər şəhəri Heydər Əliyev pros.39c","lat":40.347814,"lng":46.930891,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":36,"name":"Qazax","location":"Qazax","pudoType":"Partner","owner":"Hacıyev Niyazi","phone":"555901518","address":"Qazax şəhəri heydər Əliyev Pros.95b","lat":41.090628,"lng":45.360706,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":37,"name":"Gəncə 3","location":"Gəncə","pudoType":"Partner","owner":"Tural Şammədov","phone":"554064630","address":"Gəncə şəhəri Şahlar Hüseynov küç.1","lat":40.68719,"lng":46.38608,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":38,"name":"Gədəbəy","location":"Gədəbəy","pudoType":"Partner","owner":"Məmmədov İsmət","phone":"512068174","address":"Səməd Vurğun küç. 10B - Gədəbəy Oyal","lat":40.573353,"lng":45.806671,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":39,"name":"Ağstafa","location":"Ağstafa","pudoType":"Partner","owner":"Həibov Ramil","phone":"504488383","address":"Ağstafa şəhəri Heydər Əliyev küç.7","lat":41.115268,"lng":45.448854,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":40,"name":"Tovuz","location":"Tovuz","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Tovuz rayonu, Aşağı Öysüzlü kəndi","lat":40.979257,"lng":45.628662,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":41,"name":"Goranboy","location":"Goranboy","pudoType":"Partner","owner":"İsayev Teymur","phone":"702660516","address":"Goranboy rayonu, İ.İslmayılov küçəsi 35","lat":40.607099,"lng":46.787791,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":42,"name":"Şəmkir","location":"Şəmkir","pudoType":"Partner","owner":"Bağırov Elsəvər Faiq","phone":"504131713","address":"S.Vurğun küç.284","lat":40.8415572,"lng":46.0257998,"workingHours":"09:00-18:00","status":"active","notes":"","photo":""},
+            {"id":43,"name":"Naftalan","location":"Naftalan","pudoType":"Partner","owner":"Rəşad","phone":"+994 51 783 97 97","address":"Naftalan şəhəri Heydər Əliyev prosp","lat":40.507677,"lng":46.814552,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":44,"name":"Samux","location":"Samux","pudoType":"Partner","owner":"Elmir İsmayilov","phone":"515032552","address":"Samux şəhəri Nəbiağalı qəsəbəsi N.Nərimanov küç.40A","lat":40.766048,"lng":46.403992,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":45,"name":"Göygöl","location":"Göygöl","pudoType":"Partner","owner":"Hacızadə Ramil","phone":"777397777","address":"Göygöl şəhəri Heydər Əliyev pros.58","lat":40.588,"lng":46.3176,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":46,"name":"Balakən","location":"Balakən","pudoType":"Partner","owner":"Muradov Murad","phone":"503841884","address":"Balakən şəhəri S.Gözəlov küç.18n","lat":41.718133,"lng":46.415821,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":47,"name":"Zaqatala","location":"Zaqatala","pudoType":"Partner","owner":"Muradov Nicat","phone":"555888655","address":"Zaqatala şəhəri Heydər Əliyev pros.151A","lat":41.631079,"lng":46.640604,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":48,"name":"Qax","location":"Qax","pudoType":"Partner","owner":"Umarov Elgün","phone":"507310023","address":"Qax şəhəri Vaqif Eyvazov küç.97","lat":41.416064,"lng":46.915279,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":49,"name":"Oğuz","location":"Oğuz","pudoType":"Partner","owner":"Kərimov Tofiq","phone":"706791548","address":"Heydər Əliyev pr.111","lat":41.065958,"lng":47.463843,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":50,"name":"Şəki 2","location":"Şəki","pudoType":"Partner","owner":"İsayev Teymur","phone":"503032307","address":"Şəki şəhəri, Sabit Rəhman küç.703","lat":41.203245,"lng":47.167626,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":51,"name":"Suraxanı/ Əmircan","location":"Bakı","pudoType":"Partner","owner":"Şərəfət","phone":"552141520","address":"Bakı Şəhəri Suraxanı rayonu Əmircan qəs Z.Tağıyev 3","lat":40.4201,"lng":49.9156,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":52,"name":"Rəsulzadə","location":"Bakı","pudoType":"Partner","owner":"Famil","phone":"706153278","address":"Bineqedi rayon M.Ə.Rəsulzadə qesebesi Bineqedi şosesi 285D","lat":40.433749,"lng":49.842205,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":53,"name":"Binəqədi","location":"Bakı","pudoType":"Partner","owner":"Vüqar Hacıyev","phone":"503667776","address":"Bakı şəhəri Binəqədi rayonu Rəsulzadə qəsəbəsi Azadlıq prospekti 155","lat":40.43578,"lng":49.84461,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":54,"name":"Masazır Qurtuluş","location":"Bakı","pudoType":"Partner","owner":"Hüseyn","phone":"","address":"","lat":40.466629,"lng":49.75457,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":55,"name":"Xırdalan AAF","location":"Bakı","pudoType":"Partner","owner":"Vüqar Hacıyev","phone":"503667776","address":"Abşeron rayonu Xırdalan şəhəri H.Əliyev pros.10 Bravo Marketlə üzbəüz","lat":40.463347,"lng":49.724587,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":56,"name":"Xırdalan 3","location":"Bakı","pudoType":"Partner","owner":"Səlimov Elmar","phone":"502242924","address":"Xırdalan şəh, H.Əliyev pr., 30.məhəllə, ev 1","lat":40.45467,"lng":49.7385,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":57,"name":"Lökbatan","location":"Bakı","pudoType":"Partner","owner":"Abbasov Hüseyn","phone":"503433202","address":"Lökbatan qəs. İntiqam Nəbiyev 2A","lat":40.32336,"lng":49.741283,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":58,"name":"Masazır","location":"Bakı","pudoType":"Partner","owner":"Nuriyev Şahin","phone":"773444949","address":"Zeyd Parfum","lat":40.490648,"lng":49.75679,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":59,"name":"Sahil qəsəbəsi","location":"Bakı","pudoType":"Partner","owner":"Royal","phone":"503007005","address":"Bakı şəhər Qaradağ rayon, Sahil qəsəbəsi Emin Quliyev küçəsi, 42B","lat":40.22354,"lng":49.57659,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":60,"name":"Mehdiabad","location":"Bakı","pudoType":"Partner","owner":"Rzayev Elman","phone":"703597767","address":"Abşeron rayonu, Mehdiabad qəsəbəsi, Binəqədi Gənclər Şəhərciyi, bina 22","lat":40.48268,"lng":49.84448,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":61,"name":"Sumqayıt 3","location":"Bakı","pudoType":"Partner","owner":"Səlimov Elmar","phone":"502242924","address":"Sumqayıt şəhəri 14 cü məhəllə, ev 112B Beynəlxalq Bankın yanı.Köhnə Türk liseyinin arxası","lat":40.59326,"lng":49.67716,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":62,"name":"İçərişəhər","location":"Bakı","pudoType":"Partner","owner":"Ələkbərov Hakim","phone":"055 355 75 03","address":"Səbail rayonu, İstiqlaliyyət küç., giriş 63B","lat":40.368393,"lng":49.832483,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":63,"name":"Bülbülə","location":"Bakı","pudoType":"Partner","owner":"Əzimli Tural","phone":"707037007","address":"Bülbülə, Səttar Bəhlulzadə küç.73R (51 nömrəli qarışıq mallar mağ.)","lat":40.435213,"lng":49.978741,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":64,"name":"Zabrat","location":"Bakı","pudoType":"Partner","owner":"Səlimov Elmar","phone":"502242924","address":"Sabunçu rayonu, Zabrat qəsəbəsi, Həzi Aslanov küçəsi 52","lat":40.485887,"lng":49.953646,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":65,"name":"Yeni Yasamal","location":"Bakı","pudoType":"Partner","owner":"Əliyev Toğrul","phone":"050-270-49-00","address":"Yasamal ray. Əsəd Əhmədov küç. Ev 28L","lat":40.392021,"lng":49.791447,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":66,"name":"Elmlər","location":"Bakı","pudoType":"Partner","owner":"Abuzərli Elman","phone":"773112721","address":"Bakı Şəhəri Yasamal rayonu Zahid Xəlilov küç.30A 53 nömrəli məktəblə üzbəüz","lat":40.377969,"lng":49.811567,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":67,"name":"Mərdəkan","location":"Bakı","pudoType":"Partner","owner":"Şamxalov Elkin","phone":"518668666","address":"Mərdəkan qəs, 28 May küçəsi, 31C","lat":40.47394,"lng":50.14594,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":68,"name":"Neftçilər","location":"Bakı","pudoType":"Partner","owner":"Məmmədov Məhəmməd","phone":"515777750","address":"Nizami rayonu Rüstəm Rüstəmov küç , ev27  (Honor Bestech mağazası)","lat":40.409725,"lng":49.941713,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":69,"name":"6 mkr","location":"Bakı","pudoType":"Partner","owner":"Rəhimov Vüqar","phone":"055 9440000","address":"Binəqədi rayonu, Cavadxan küç. 3245`ci məhəllə, ev 4A (Clean Zone mağazası)","lat":40.419837,"lng":49.818291,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":70,"name":"Şərur","location":"Naxçıvan","pudoType":"Partner","owner":"Orxan Məmmədov","phone":"+99470  5001005","address":"Şərur şəhəri, Kapitan Seyidov 1/1A (Ayla Butik)","lat":39.553898,"lng":44.98565,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":71,"name":"Abşeron 1","location":"Abşeron","pudoType":"Branch","owner":"Ələkbər Quluzadə","phone":"552077077","address":"Xırdalan şəhəri","lat":40.52419,"lng":50.00307,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":72,"name":"Abşeron 2","location":"Abşeron","pudoType":"Branch","owner":"Mətanət Həsənova","phone":"503007717","address":"Sumqayıt yolu 45 km","lat":40.53419,"lng":50.01307,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":73,"name":"Abşeron 3","location":"Abşeron","pudoType":"Branch","owner":"Namiq Həmidov","phone":"555444577","address":"Novxanı","lat":40.54419,"lng":50.02307,"workingHours":"09:00-20:00","status":"active","notes":"","photo":""},
+            {"id":74,"name":"Abşeron 4","location":"Abşeron","pudoType":"Branch","owner":"Ələddin Məmmədov","phone":"505003003","address":"Buzovna qəsəbəsi","lat":40.55419,"lng":50.03307,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":75,"name":"Abşeron 5","location":"Abşeron","pudoType":"Branch","owner":"Rəşad Həsənov","phone":"551112233","address":"Mərdəkan qəsəbəsi","lat":40.56419,"lng":50.04307,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":76,"name":"Abşeron 6","location":"Abşeron","pudoType":"Branch","owner":"Kamran Bayramov","phone":"507008009","address":"Digah qəsəbəsi","lat":40.57419,"lng":50.05307,"workingHours":"10:00-19:00","status":"active","notes":"","photo":""},
+            {"id":77,"name":"Yasamal","location":"Bakı","pudoType":"Branch","owner":"Yasamal Filialı","phone":"125550400","address":"Zahid Xəlilov küç. 15","lat":40.395264,"lng":49.827092,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":78,"name":"Nizami","location":"Bakı","pudoType":"Branch","owner":"Nizami Filialı","phone":"125550500","address":"Rəşid Behbudov küç. 88","lat":40.387155,"lng":49.852174,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":79,"name":"Səbail","location":"Bakı","pudoType":"Branch","owner":"Səbail Filialı","phone":"125550600","address":"Neftçilər prospekti 69","lat":40.361234,"lng":49.855789,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":80,"name":"Nərimanov","location":"Bakı","pudoType":"Branch","owner":"Nərimanov Filialı","phone":"125550700","address":"Azadlıq prospekti 78","lat":40.402156,"lng":49.849321,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":81,"name":"Nəsimi","location":"Bakı","pudoType":"Branch","owner":"Nəsimi Filialı","phone":"125550800","address":"Fikrət Əmirov küç. 25","lat":40.384567,"lng":49.844123,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":82,"name":"Xətai","location":"Bakı","pudoType":"Branch","owner":"Xətai Filialı","phone":"125550900","address":"Xocalı prospekti 67","lat":40.376891,"lng":49.836789,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":83,"name":"Qaradağ","location":"Bakı","pudoType":"Branch","owner":"Qaradağ Filialı","phone":"125551000","address":"Ziya Bünyadov prospekti 156","lat":40.325478,"lng":49.912345,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":84,"name":"Sabunçu","location":"Bakı","pudoType":"Branch","owner":"Sabunçu Filialı","phone":"125551100","address":"Bakıxanov qəsəbəsi","lat":40.398765,"lng":49.975432,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":85,"name":"Pirallahı","location":"Bakı","pudoType":"Branch","owner":"Pirallahı Filialı","phone":"125551200","address":"Pirallahı adasında","lat":40.2957,"lng":49.9235,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":86,"name":"Binəqədi 2","location":"Bakı","pudoType":"Branch","owner":"Binəqədi Filialı","phone":"125551300","address":"Binəqədi şəhərciyi","lat":40.445123,"lng":49.834567,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":87,"name":"Suraxanı","location":"Bakı","pudoType":"Branch","owner":"Suraxanı Filialı","phone":"125551400","address":"Suraxanı rayonu","lat":40.431234,"lng":49.989876,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":88,"name":"M.Əcəmi","location":"Bakı","pudoType":"Branch","owner":"M.Əcəmi Filialı","phone":"125551500","address":"M.Əcəmi qəsəbəsi","lat":40.356789,"lng":49.987654,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":89,"name":"Bayıl","location":"Bakı","pudoType":"Branch","owner":"Bayıl Filialı","phone":"125551600","address":"Bayıl qəsəbəsi","lat":40.345234,"lng":49.845123,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":90,"name":"Biləcəri","location":"Bakı","pudoType":"Branch","owner":"Biləcəri Filialı","phone":"125551700","address":"Biləcəri qəsəbəsi","lat":40.334567,"lng":49.876543,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":91,"name":"İnşaatçılar","location":"Bakı","pudoType":"Branch","owner":"İnşaatçılar Filialı","phone":"125551800","address":"İnşaatçılar prospekti 45","lat":40.323456,"lng":49.867891,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":92,"name":"Xətai","location":"Bakı","pudoType":"Branch","owner":"Xətai Filialı 2","phone":"125551900","address":"Xətai rayonu mərkəzi","lat":40.312345,"lng":49.856789,"workingHours":"09:00-21:00","status":"active","notes":"","photo":""},
+            {"id":93,"name":"Gəncə","location":"Gəncə","pudoType":"Branch","owner":"Gəncə Filialı","phone":"122447700","address":"Heydər Əliyev prospekti 1","lat":40.682657,"lng":46.361503,"workingHours":"09:00-20:00","status":"active","notes":"","photo":""},
+            {"id":94,"name":"Mingəçevir","location":"Mingəçevir","pudoType":"Branch","owner":"Mingəçevir Filialı","phone":"1477700","address":"Ü.Hacıbəyli küç. 12","lat":40.768456,"lng":47.059289,"workingHours":"09:00-20:00","status":"active","notes":"","photo":""},
+            {"id":95,"name":"Gəncə 2","location":"Gəncə","pudoType":"Branch","owner":"Gəncə Filialı 2","phone":"122447701","address":"Cavadxan küç. 25","lat":40.695123,"lng":46.375789,"workingHours":"09:00-20:00","status":"active","notes":"","photo":""},
+            {"id":96,"name":"Şirvan","location":"Şirvan","pudoType":"Branch","owner":"Şirvan Filialı","phone":"1217700","address":"H.Əliyev prospekti 89","lat":39.937890,"lng":48.929123,"workingHours":"09:00-20:00","status":"active","notes":"","photo":""},
+            {"id":97,"name":"Naxçıvan","location":"Naxçıvan","pudoType":"Branch","owner":"Naxçıvan Filialı","phone":"1362200","address":"Heydər Əliyev prospekti 12","lat":39.209667,"lng":45.41306,"workingHours":"09:00-20:00","status":"active","notes":"","photo":""}
+        ];
+
+        // Validation utilities
+        const ValidationUtils = {
+            validatePhone(phone) {
+                if (!phone) return true;
+                const cleanPhone = phone.replace(/\s/g, '');
+                const patterns = [
+                    /^0(50|51|55|70|77)\d{7}$/,
+                    /^\+994(50|51|55|70|77)\d{7}$/,
+                    /^(50|51|55|70|77)\d{7}$/
+                ];
+                return patterns.some(pattern => pattern.test(cleanPhone));
+            },
+
+            validateCoordinates(lat, lng) {
+                const latNum = parseFloat(lat);
+                const lngNum = parseFloat(lng);
+                
+                const minLat = 38.3, maxLat = 42.0;
+                const minLng = 44.7, maxLng = 51.0;
+                
+                return {
+                    valid: latNum >= minLat && latNum <= maxLat && lngNum >= minLng && lngNum <= maxLng,
+                    latValid: latNum >= minLat && latNum <= maxLat,
+                    lngValid: lngNum >= minLng && lngNum <= maxLng
+                };
+            },
+
+            validateWorkingHours(hours) {
+                if (!hours) return true;
+                const pattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                return pattern.test(hours);
+            },
+
+            validateAddress(address) {
+                return address && address.trim().length >= 10;
+            },
+
+            validateName(name) {
+                return name && name.trim().length >= 2;
+            }
+        };
+
+        // Status translations
+        const STATUS_LABELS = {
+            'active': 'Aktiv',
+            'temporarily_closed': 'Müvəqqəti Bağlı',
+            'maintenance': 'Təmir'
+        };
+
+        class PudoSystem {
+            constructor() {
+                this.data = [...PUDO_DATA];
+                this.map = null;
+                this.markers = [];
+                this.markerClusterGroup = null;
+                this.currentFilter = null;
+                this.isEditing = false;
+                this.editingId = null;
+                this.proximityThreshold = 1.0;
+                this.radiusCircles = [];
+                this.showRadius = false;
+
+                this.initializeMap();
+                this.setupEventListeners();
+                this.updateUI();
+                this.showAllMarkers();
+                this.addLoadingEffect();
+            }
+
+            addLoadingEffect() {
+                const sidebarElements = document.querySelectorAll('.sidebar > *');
+                sidebarElements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('slide-in');
+                    }, index * 100);
+                });
+            }
+
+            initializeMap() {
+                try {
+                    this.map = L.map('map').setView([40.1431, 47.5769], 8);
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 18,
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(this.map);
+
+                    const azerbaijanBounds = [
+                        [38.3, 44.7],
+                        [42.0, 50.5]
+                    ];
+                    this.map.setMaxBounds(azerbaijanBounds);
+                    this.map.options.minZoom = 7;
+
+                    this.map.createPane('radiusPane');
+                    this.map.getPane('radiusPane').style.zIndex = 400;
+
+                    this.markerClusterGroup = L.markerClusterGroup({
+                        chunkedLoading: true,
+                        maxClusterRadius: 50,
+                        spiderfyOnMaxZoom: false,
+                        showCoverageOnHover: false,
+                        zoomToBoundsOnClick: true
+                    });
+                    this.map.addLayer(this.markerClusterGroup);
+                } catch (error) {
+                    console.error('Map initialization failed:', error);
+                    this.showMessage('Xəritə yüklənmədi. Səhifəni yeniləyin.', 'error');
+                }
+            }
+
+            getStatusEmoji(status) {
+                switch(status) {
+                    case 'active': return '🟢';
+                    case 'temporarily_closed': return '🟡';
+                    case 'maintenance': return '🔴';
+                    default: return '🟢';
+                }
+            }
+
+            createMarker(location) {
+                let color, letter;
+                switch (location.pudoType) {
+                    case 'Branch':
+                        color = 'linear-gradient(135deg, #10b981, #059669)';
+                        letter = 'B';
+                        break;
+                    case 'Partner':
+                        color = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                        letter = 'P';
+                        break;
+                    default:
+                        color = 'linear-gradient(135deg, #6b7280, #4b5563)';
+                        letter = 'P';
+                }
+
+                // Add status indicator to marker color
+                if (location.status === 'temporarily_closed') {
+                    color = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                } else if (location.status === 'maintenance') {
+                    color = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                }
+
+                const iconHtml = `
+                    <div style="background: ${color}; width: 32px; height: 32px; border-radius: 50%; 
+                         border: 3px solid white; box-shadow: 0 6px 12px rgba(0,0,0,0.4); 
+                         display: flex; align-items: center; justify-content: center;
+                         transition: transform 0.2s ease;">
+                        <span style="color: white; font-size: 16px; font-weight: bold;">${letter}</span>
+                    </div>
+                `;
+
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: iconHtml,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+
+                const marker = L.marker([location.lat, location.lng], { icon: icon });
+
+                const popupContent = `
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-width: 320px; line-height: 1.6; color: #1f2937;">
+                        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 1rem; margin: -0.75rem -0.75rem 1rem -0.75rem; border-radius: 0.5rem 0.5rem 0 0;">
+                            <div style="font-weight: 700; font-size: 1.25em; display: flex; align-items: center; justify-content: space-between; color: white;">
+                                ${location.name}
+                                <span style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;">${location.pudoType}</span>
+                            </div>
+                            <div style="font-size: 0.9em; opacity: 0.9; margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; color: white;">
+                                ID: ${location.id}
+                                <span style="margin-left: 0.5rem; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+                                    ${this.getStatusEmoji(location.status || 'active')} ${STATUS_LABELS[location.status || 'active']}
+                                </span>
+                            </div>
+                        </div>
+                        ${location.photo ? `<img src="${location.photo}" style="width: 100%; max-width: 200px; height: 120px; object-fit: cover; border-radius: 0.5rem; margin: 0.75rem 0; border: 2px solid #e5e7eb;" alt="${location.name}">` : ''}
+                        ${location.owner ? `<div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem; color: #1f2937;"><strong style="color: #1f2937;">Sahibkar:</strong> <span style="color: #374151;">${location.owner}</span></div>` : ''}
+                        ${location.phone ? `<div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem; color: #1f2937;"><strong style="color: #1f2937;">Telefon:</strong> <span style="color: #374151;">${location.phone}</span></div>` : ''}
+                        ${location.location ? `<div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem; color: #1f2937;"><strong style="color: #1f2937;">Şəhər:</strong> <span style="color: #374151;">${location.location}</span></div>` : ''}
+                        <div style="margin: 0.75rem 0; color: #1f2937;"><strong style="color: #1f2937;">Ünvan:</strong><br><span style="color: #6b7280; font-size: 0.9em;">${location.address}</span></div>
+                        <div style="margin: 0.75rem 0; background: #eff6ff; padding: 0.75rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; color: #1f2937;">
+                            <strong style="color: #1f2937;">İş saatları:</strong> <span style="color: #1e40af; font-weight: 600;">${location.workingHours}</span>
+                        </div>
+                        ${location.notes ? `<div style="margin: 0.75rem 0; padding: 0.75rem; background: #fef3c7; border-radius: 0.5rem; border-left: 4px solid #f59e0b; color: #1f2937;"><strong style="color: #92400e;">Qeydlər:</strong><br><span style="color: #92400e; font-size: 0.9em;">${location.notes}</span></div>` : ''}
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button onclick="pudoSystem.editLocation(${location.id})" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: transform 0.2s;">Düzəliş</button>
+                            <button onclick="pudoSystem.deleteLocation(${location.id})" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: transform 0.2s;">Sil</button>
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent, { maxWidth: 380, className: 'custom-popup' });
+                return marker;
+            }
+
+            showAllMarkers() {
+                this.clearMarkers();
+                
+                const btn = document.getElementById('show-all-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<div class="loading"></div> Yüklənir...';
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    this.data.forEach(location => {
+                        const marker = this.createMarker(location);
+                        this.markerClusterGroup.addLayer(marker);
+                        this.markers.push(marker);
+                    });
+
+                    if (this.markers.length > 0) {
+                        setTimeout(() => {
+                            const group = new L.featureGroup(this.markers);
+                            this.map.fitBounds(group.getBounds().pad(0.05));
+                        }, 200);
+                    }
+
+                    this.updateLocationsList(this.data);
+                    this.currentFilter = null;
+                    this.updateRadiusDisplay();
+                    
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 300);
+            }
+
+            clearMarkers() {
+                this.markerClusterGroup.clearLayers();
+                this.markers = [];
+                this.clearRadiusCircles();
+            }
+
+            clearRadiusCircles() {
+                this.radiusCircles.forEach(circle => {
+                    this.map.removeLayer(circle);
+                });
+                this.radiusCircles = [];
+            }
+
+            updateRadiusDisplay() {
+                this.clearRadiusCircles();
+                
+                if (this.showRadius) {
+                    this.data.forEach(location => {
+                        const circle = L.circle([location.lat, location.lng], {
+                            radius: this.proximityThreshold * 1000,
+                            color: location.pudoType === 'Branch' ? '#059669' : '#2563eb',
+                            fillColor: location.pudoType === 'Branch' ? '#10b981' : '#3b82f6',
+                            fillOpacity: 0.25,
+                            weight: 3,
+                            opacity: 0.8,
+                            dashArray: '5, 10',
+                            pane: 'radiusPane'
+                        });
+                        
+                        circle.bindTooltip(`${location.name}<br>Radius: ${this.proximityThreshold}km`, {
+                            permanent: false,
+                            direction: 'top',
+                            className: 'radius-tooltip'
+                        });
+                        
+                        circle.addTo(this.map);
+                        this.radiusCircles.push(circle);
+                    });
+                }
+            }
+
+            filterByType(type) {
+                const filtered = this.data.filter(location => location.pudoType === type);
+                this.showFilteredLocations(filtered, `Növ: ${type}`);
+            }
+
+            filterByLocation(location) {
+                const filtered = this.data.filter(pudo => pudo.location === location);
+                this.showFilteredLocations(filtered, `Şəhər: ${location}`);
+            }
+
+            filterByStatus(status) {
+                const filtered = this.data.filter(pudo => (pudo.status || 'active') === status);
+                this.showFilteredLocations(filtered, `Status: ${STATUS_LABELS[status]}`);
+            }
+
+            showFilteredLocations(locations, filterName) {
+                this.clearMarkers();
+                
+                locations.forEach(location => {
+                    const marker = this.createMarker(location);
+                    this.markerClusterGroup.addLayer(marker);
+                    this.markers.push(marker);
+                });
+
+                if (this.markers.length > 0) {
+                    setTimeout(() => {
+                        const group = new L.featureGroup(this.markers);
+                        this.map.fitBounds(group.getBounds().pad(0.1));
+                    }, 100);
+                }
+
+                this.currentFilter = filterName;
+                this.updateLocationsList(locations);
+                this.updateRadiusDisplay();
+            }
+
+            searchLocations(searchTerm) {
+                if (!searchTerm.trim()) {
+                    this.showAllMarkers();
+                    return;
+                }
+
+                const filtered = this.data.filter(location =>
+                    location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    location.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (location.owner && location.owner.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (location.phone && location.phone.includes(searchTerm)) ||
+                    (location.location && location.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    location.pudoType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (location.notes && location.notes.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+
+                this.showFilteredLocations(filtered, `Axtarış: "${searchTerm}"`);
+            }
+
+            updateUI() {
+                this.updateStats();
+                this.updateTypesList();
+                this.updateCitiesList();
+                this.updateStatusList();
+            }
+
+            updateStats() {
+                const branchCount = this.data.filter(p => p.pudoType === 'Branch').length;
+                const partnerCount = this.data.filter(p => p.pudoType === 'Partner').length;
+                const totalCount = this.data.length;
+
+                document.getElementById('branch-count').textContent = branchCount;
+                document.getElementById('partner-count').textContent = partnerCount;
+                document.getElementById('total-count').textContent = totalCount;
+            }
+
+            updateTypesList() {
+                const typeCounts = {};
+                this.data.forEach(location => {
+                    const type = location.pudoType;
+                    typeCounts[type] = (typeCounts[type] || 0) + 1;
+                });
+
+                const typesList = document.getElementById('types-list');
+                typesList.innerHTML = '';
+
+                Object.entries(typeCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .forEach(([type, count]) => {
+                        const div = document.createElement('div');
+                        div.className = 'list-item';
+                        div.innerHTML = `
+                            <span class="item-name">${type}</span>
+                            <span class="item-count">${count}</span>
+                        `;
+                        div.addEventListener('click', () => {
+                            this.filterByType(type);
+                            document.querySelectorAll('#types-list .list-item').forEach(item => item.classList.remove('active'));
+                            div.classList.add('active');
+                        });
+                        typesList.appendChild(div);
+                    });
+            }
+
+            updateCitiesList() {
+                const cityCounts = {};
+                this.data.forEach(location => {
+                    const city = location.location || 'Digər';
+                    cityCounts[city] = (cityCounts[city] || 0) + 1;
+                });
+
+                const citiesList = document.getElementById('cities-list');
+                citiesList.innerHTML = '';
+
+                Object.entries(cityCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .forEach(([city, count]) => {
+                        const div = document.createElement('div');
+                        div.className = 'list-item';
+                        div.innerHTML = `
+                            <span class="item-name">${city}</span>
+                            <span class="item-count">${count}</span>
+                        `;
+                        div.addEventListener('click', () => {
+                            this.filterByLocation(city);
+                            document.querySelectorAll('#cities-list .list-item').forEach(item => item.classList.remove('active'));
+                            div.classList.add('active');
+                        });
+                        citiesList.appendChild(div);
+                    });
+            }
+
+            updateStatusList() {
+                const statusCounts = {};
+                this.data.forEach(location => {
+                    const status = location.status || 'active';
+                    statusCounts[status] = (statusCounts[status] || 0) + 1;
+                });
+
+                const statusList = document.getElementById('status-list');
+                statusList.innerHTML = '';
+
+                Object.entries(statusCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .forEach(([status, count]) => {
+                        const div = document.createElement('div');
+                        div.className = 'list-item';
+                        div.innerHTML = `
+                            <span class="item-name">${this.getStatusEmoji(status)} ${STATUS_LABELS[status]}</span>
+                            <span class="item-count">${count}</span>
+                        `;
+                        div.addEventListener('click', () => {
+                            this.filterByStatus(status);
+                            document.querySelectorAll('#status-list .list-item').forEach(item => item.classList.remove('active'));
+                            div.classList.add('active');
+                        });
+                        statusList.appendChild(div);
+                    });
+            }
+
+            updateLocationsList(locations) {
+                const container = document.getElementById('locations-list');
+                container.innerHTML = '';
+
+                locations.slice(0, 50).forEach(location => {
+                    const div = document.createElement('div');
+                    div.className = 'location-item';
+                    div.innerHTML = `
+                        <div class="location-actions">
+                            <button class="action-btn-small" onclick="pudoSystem.editLocation(${location.id})" title="Düzəliş">✏️</button>
+                            <button class="action-btn-small" onclick="pudoSystem.deleteLocation(${location.id})" title="Sil">🗑️</button>
+                        </div>
+                        <div class="location-name">
+                            ${location.name}
+                            <span class="pudo-badge ${location.pudoType.toLowerCase()}">${location.pudoType}</span>
+                            <span class="status-badge ${location.status || 'active'}">${this.getStatusEmoji(location.status || 'active')}</span>
+                        </div>
+                        <div class="location-details"><strong>${location.location || ''}</strong> ${location.owner ? '- ' + location.owner : ''}</div>
+                        <div class="location-details">${location.address.substring(0, 60)}${location.address.length > 60 ? '...' : ''}</div>
+                        <div class="location-details" style="color: #3b82f6; font-weight: 600;">${location.phone || 'N/A'}</div>
+                    `;
+
+                    div.addEventListener('click', (e) => {
+                        if (!e.target.closest('.location-actions')) {
+                            this.map.setView([location.lat, location.lng], 16);
+                            const marker = this.markers.find(m => 
+                                Math.abs(m.getLatLng().lat - location.lat) < 0.0001 && 
+                                Math.abs(m.getLatLng().lng - location.lng) < 0.0001
+                            );
+                            if (marker) marker.openPopup();
+                        }
+                    });
+
+                    container.appendChild(div);
+                });
+
+                if (locations.length > 50) {
+                    const moreDiv = document.createElement('div');
+                    moreDiv.className = 'location-item';
+                    moreDiv.style.textAlign = 'center';
+                    moreDiv.style.fontStyle = 'italic';
+                    moreDiv.style.color = '#6b7280';
+                    moreDiv.innerHTML = `... və ${locations.length - 50} əlavə məntəqə`;
+                    container.appendChild(moreDiv);
+                }
+            }
+
+            calculateDistance(lat1, lng1, lat2, lng2) {
+                const R = 6371;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLng = (lng2 - lng1) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                         Math.sin(dLng/2) * Math.sin(dLng/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+
+            checkProximity() {
+                const results = document.getElementById('analysis-results');
+                results.style.display = 'block';
+                
+                const closeLocations = [];
+                
+                for (let i = 0; i < this.data.length; i++) {
+                    for (let j = i + 1; j < this.data.length; j++) {
+                        const distance = this.calculateDistance(
+                            this.data[i].lat, this.data[i].lng,
+                            this.data[j].lat, this.data[j].lng
+                        );
+                        
+                        if (distance < this.proximityThreshold) {
+                            closeLocations.push({
+                                location1: this.data[i],
+                                location2: this.data[j],
+                                distance: distance.toFixed(2)
+                            });
+                        }
+                    }
+                }
+                
+                let html = `<h4 style="color: #2563eb; margin-bottom: 0.5rem;">Məsafə Yoxlaması Nəticələri (${this.proximityThreshold}km limit)</h4>`;
+                
+                if (closeLocations.length === 0) {
+                    html += `<p style="color: #059669;">Bütün PUDO məntəqələri kifayət qədər aralıdır (>${this.proximityThreshold}km)</p>`;
+                } else {
+                    html += `<p style="color: #dc2626;">${closeLocations.length} cüt PUDO ${this.proximityThreshold}km-dən yaxındır:</p><ul style="margin: 0.5rem 0; padding-left: 1rem; max-height: 200px; overflow-y: auto;">`;
+                    closeLocations.forEach(pair => {
+                        html += `<li><strong>${pair.location1.name}</strong> və <strong>${pair.location2.name}</strong> - ${pair.distance}km</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                results.innerHTML = html;
+            }
+
+            analyzeCoverage() {
+                const results = document.getElementById('analysis-results');
+                results.style.display = 'block';
+                
+                const locationStats = {};
+                this.data.forEach(pudo => {
+                    const city = pudo.location || 'Digər';
+                    if (!locationStats[city]) {
+                        locationStats[city] = { count: 0, pudos: [] };
+                    }
+                    locationStats[city].count++;
+                    locationStats[city].pudos.push(pudo);
+                });
+
+                const lowCoverage = Object.entries(locationStats)
+                    .filter(([city, stat]) => stat.count === 1)
+                    .sort();
+                
+                const highCoverage = Object.entries(locationStats)
+                    .filter(([city, stat]) => stat.count >= 5)
+                    .sort((a, b) => b[1].count - a[1].count);
+
+                let html = '<h4 style="color: #7c3aed; margin-bottom: 0.5rem;">Əhatə Analizi</h4>';
+                
+                html += `<div style="margin-bottom: 1rem;">
+                    <strong>Yüksək əhatə (≥5 PUDO):</strong><br>
+                    ${highCoverage.length ? highCoverage.map(([city, stat]) => `${city}: ${stat.count}`).join(', ') : 'Yoxdur'}
+                </div>`;
+                
+                html += `<div style="margin-bottom: 1rem;">
+                    <strong>Aşağı əhatə (1 PUDO):</strong><br>
+                    ${lowCoverage.length ? lowCoverage.map(([city]) => city).join(', ') : 'Yoxdur'}
+                </div>`;
+                
+                results.innerHTML = html;
+            }
+
+            analyzeDensity() {
+                const results = document.getElementById('analysis-results');
+                results.style.display = 'block';
+                
+                const locationDensity = {};
+                this.data.forEach(pudo => {
+                    const city = pudo.location || 'Digər';
+                    locationDensity[city] = (locationDensity[city] || 0) + 1;
+                });
+
+                const sortedDensity = Object.entries(locationDensity)
+                    .sort((a, b) => b[1] - a[1]);
+
+                const totalPudos = this.data.length;
+                const totalCities = sortedDensity.length;
+                const avgDensity = (totalPudos / totalCities).toFixed(1);
+
+                let html = '<h4 style="color: #ea580c; margin-bottom: 0.5rem;">Sıxlıq Analizi</h4>';
+                
+                html += `<div style="margin-bottom: 1rem;">
+                    <strong>Ümumi statistika:</strong><br>
+                    • Toplam PUDO: ${totalPudos}<br>
+                    • Şəhər sayı: ${totalCities}<br>
+                    • Orta sıxlıq: ${avgDensity} PUDO/şəhər
+                </div>`;
+                
+                html += '<div style="margin-bottom: 1rem;"><strong>Ən yüksək sıxlıq:</strong><br>';
+                sortedDensity.slice(0, 5).forEach(([city, count]) => {
+                    const percentage = ((count / totalPudos) * 100).toFixed(1);
+                    html += `${city}: ${count} PUDO (${percentage}%)<br>`;
+                });
+                html += '</div>';
+                
+                results.innerHTML = html;
+            }
+
+            validateForm() {
+                let isValid = true;
+
+                document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+                document.querySelectorAll('input, textarea, select').forEach(el => el.classList.remove('error'));
+
+                const name = document.getElementById('pudo-name').value;
+                if (!ValidationUtils.validateName(name)) {
+                    this.showFieldError('name', 'Məntəqə adı ən azı 2 simvol olmalıdır');
+                    isValid = false;
+                }
+
+                const type = document.getElementById('pudo-type').value;
+                if (!type) {
+                    this.showFieldError('type', 'PUDO növünü seçin');
+                    isValid = false;
+                }
+
+                const location = document.getElementById('pudo-location').value;
+                if (!ValidationUtils.validateName(location)) {
+                    this.showFieldError('location', 'Şəhər/rayon tələb olunur');
+                    isValid = false;
+                }
+
+                const phone = document.getElementById('pudo-phone').value;
+                if (phone && !ValidationUtils.validatePhone(phone)) {
+                    this.showFieldError('phone', 'Telefon nömrəsi düzgün deyil (məs: 0501234567)');
+                    isValid = false;
+                }
+
+                const hours = document.getElementById('pudo-hours').value;
+                if (hours && !ValidationUtils.validateWorkingHours(hours)) {
+                    this.showFieldError('hours', 'Format: 10:00-19:00');
+                    isValid = false;
+                }
+
+                const lat = document.getElementById('pudo-lat').value;
+                const lng = document.getElementById('pudo-lng').value;
+                
+                if (!lat || !lng) {
+                    if (!lat) this.showFieldError('lat', 'Enlik tələb olunur');
+                    if (!lng) this.showFieldError('lng', 'Uzunluq tələb olunur');
+                    isValid = false;
+                } else {
+                    const coordValidation = ValidationUtils.validateCoordinates(lat, lng);
+                    if (!coordValidation.latValid) {
+                        this.showFieldError('lat', 'Enlik Azərbaycan hüdudlarında olmalıdır (38-42)');
+                        isValid = false;
+                    }
+                    if (!coordValidation.lngValid) {
+                        this.showFieldError('lng', 'Uzunluq Azərbaycan hüdudlarında olmalıdır (44-51)');
+                        isValid = false;
+                    }
+                }
+
+                const address = document.getElementById('pudo-address').value;
+                if (!ValidationUtils.validateAddress(address)) {
+                    this.showFieldError('address', 'Ünvan ən azı 10 simvol olmalıdır');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            showFieldError(fieldName, message) {
+                const field = document.getElementById(`pudo-${fieldName}`);
+                const errorElement = document.getElementById(`${fieldName}-error`);
+                
+                if (field) field.classList.add('error');
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.classList.add('show');
+                }
+            }
+
+            addLocation(locationData) {
+                const newLocation = {
+                    id: Math.max(...this.data.map(p => p.id), 0) + 1,
+                    name: locationData.name,
+                    location: locationData.location || '',
+                    owner: locationData.owner || '',
+                    phone: locationData.phone || '',
+                    address: locationData.address,
+                    lat: parseFloat(locationData.lat),
+                    lng: parseFloat(locationData.lng),
+                    workingHours: locationData.workingHours || '10:00-19:00',
+                    pudoType: locationData.pudoType,
+                    status: locationData.status || 'active',
+                    notes: locationData.notes || '',
+                    photo: locationData.photo || ''
+                };
+
+                this.data.push(newLocation);
+                this.updateUI();
+                this.showAllMarkers();
+                this.showMessage('Yeni PUDO məntəqəsi uğurla əlavə edildi!', 'success');
+            }
+
+            editLocation(id) {
+                const location = this.data.find(p => p.id === id);
+                if (!location) return;
+
+                document.getElementById('pudo-name').value = location.name;
+                document.getElementById('pudo-type').value = location.pudoType;
+                document.getElementById('pudo-location').value = location.location || '';
+                document.getElementById('pudo-status').value = location.status || 'active';
+                document.getElementById('pudo-owner').value = location.owner || '';
+                document.getElementById('pudo-phone').value = location.phone || '';
+                document.getElementById('pudo-address').value = location.address;
+                document.getElementById('pudo-lat').value = location.lat;
+                document.getElementById('pudo-lng').value = location.lng;
+                document.getElementById('pudo-hours').value = location.workingHours;
+                document.getElementById('pudo-notes').value = location.notes || '';
+
+                // Show existing photo
+                if (location.photo) {
+                    const preview = document.getElementById('photo-preview');
+                    preview.src = location.photo;
+                    preview.style.display = 'block';
+                }
+
+                this.isEditing = true;
+                this.editingId = id;
+                document.getElementById('modal-title').textContent = 'PUDO Məntəqəsini Redaktə Et';
+                document.getElementById('save-btn').textContent = 'Dəyişiklikləri Saxla';
+
+                document.getElementById('pudo-modal').style.display = 'block';
+            }
+
+            updateLocation(id, locationData) {
+                const index = this.data.findIndex(p => p.id === id);
+                if (index === -1) return;
+
+                this.data[index] = {
+                    ...this.data[index],
+                    name: locationData.name,
+                    location: locationData.location || '',
+                    owner: locationData.owner || '',
+                    phone: locationData.phone || '',
+                    address: locationData.address,
+                    lat: parseFloat(locationData.lat),
+                    lng: parseFloat(locationData.lng),
+                    workingHours: locationData.workingHours || this.data[index].workingHours,
+                    pudoType: locationData.pudoType,
+                    status: locationData.status || 'active',
+                    notes: locationData.notes || '',
+                    photo: locationData.photo || this.data[index].photo
+                };
+
+                this.updateUI();
+                this.showAllMarkers();
+                this.showMessage('PUDO məntəqəsi uğurla yeniləndi!', 'success');
+            }
+
+            deleteLocation(id) {
+                if (!confirm('Bu PUDO məntəqəsini silməyə əminsinizmi?')) return;
+
+                this.data = this.data.filter(p => p.id !== id);
+                this.updateUI();
+                this.showAllMarkers();
+                this.showMessage('PUDO məntəqəsi uğurla silindi!', 'success');
+            }
+
+            exportData() {
+                try {
+                    const excelData = this.data.map(location => ({
+                        'ID': location.id,
+                        'PUDO': location.name,
+                        'LOCATION': location.location,
+                        'PUDO TYPE': location.pudoType,
+                        'STATUS': STATUS_LABELS[location.status || 'active'],
+                        'OWNER': location.owner,
+                        'CONTACTS': location.phone,
+                        'ADDRESS': location.address,
+                        'Latitude': location.lat,
+                        'Longitude': location.lng,
+                        'WORKING HOURS': location.workingHours,
+                        'NOTES': location.notes || ''
+                    }));
+
+                    const ws = XLSX.utils.json_to_sheet(excelData);
+                    const wb = XLSX.utils.book_new();
+                    
+                    ws['!cols'] = [
+                        { wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 12 },
+                        { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 50 },
+                        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 30 }
+                    ];
+
+                    XLSX.utils.book_append_sheet(wb, ws, 'PUDO Locations');
+
+                    const today = new Date().toISOString().split('T')[0];
+                    const filename = `PUDO_Coordinates_${today}.xlsx`;
+
+                    XLSX.writeFile(wb, filename);
+
+                    this.showMessage(`${this.data.length} PUDO məntəqəsi Excel faylına eksport edildi!`, 'success');
+                } catch (error) {
+                    console.error('Export error:', error);
+                    this.showMessage('Export zamanı xəta baş verdi!', 'error');
+                }
+            }
+
+            showMessage(message, type = 'success') {
+                const messageDiv = document.getElementById('form-message');
+                messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
+
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 4000);
+            }
+
+            setupEventListeners() {
+                // Theme toggle
+                document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+
+                // Photo upload preview
+                document.getElementById('pudo-photo')?.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const preview = document.getElementById('photo-preview');
+                            preview.src = event.target.result;
+                            preview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                const thresholdSlider = document.getElementById('proximity-threshold');
+                const thresholdValue = document.getElementById('threshold-value');
+                const showRadiusCheckbox = document.getElementById('show-radius');
+
+                thresholdSlider?.addEventListener('input', (e) => {
+                    this.proximityThreshold = parseFloat(e.target.value);
+                    thresholdValue.textContent = `${this.proximityThreshold.toFixed(1)} km`;
+                    this.updateRadiusDisplay();
+                });
+
+                showRadiusCheckbox?.addEventListener('change', (e) => {
+                    this.showRadius = e.target.checked;
+                    this.updateRadiusDisplay();
+                });
+
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const filter = tab.dataset.filter;
+
+                        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+
+                        document.getElementById('types-section').style.display = filter === 'types' ? 'block' : 'none';
+                        document.getElementById('cities-section').style.display = filter === 'cities' ? 'block' : 'none';
+                        document.getElementById('status-section').style.display = filter === 'status' ? 'block' : 'none';
+                    });
+                });
+
+                document.getElementById('add-pudo-btn').addEventListener('click', () => {
+                    this.isEditing = false;
+                    this.editingId = null;
+                    document.getElementById('modal-title').textContent = 'Yeni PUDO Məntəqəsi';
+                    document.getElementById('save-btn').textContent = 'Yadda saxla';
+                    document.getElementById('pudo-form').reset();
+                    document.getElementById('photo-preview').style.display = 'none';
+                    
+                    document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+                    document.querySelectorAll('input, textarea, select').forEach(el => el.classList.remove('error'));
+                    
+                    document.getElementById('pudo-modal').style.display = 'block';
+                });
+
+                document.getElementById('modal-close').addEventListener('click', () => {
+                    document.getElementById('pudo-modal').style.display = 'none';
+                });
+
+                document.getElementById('cancel-btn').addEventListener('click', () => {
+                    document.getElementById('pudo-modal').style.display = 'none';
+                });
+
+                document.getElementById('pudo-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+
+                    if (!this.validateForm()) {
+                        this.showMessage('Zəruri sahələri düzgün doldurun!', 'error');
+                        return;
+                    }
+
+                    const formData = new FormData(e.target);
+                    const locationData = Object.fromEntries(formData.entries());
+
+                    // Handle photo
+                    const photoFile = document.getElementById('pudo-photo').files[0];
+                    if (photoFile) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            locationData.photo = event.target.result;
+                            
+                            if (this.isEditing) {
+                                this.updateLocation(this.editingId, locationData);
+                            } else {
+                                this.addLocation(locationData);
+                            }
+                            document.getElementById('pudo-modal').style.display = 'none';
+                        };
+                        reader.readAsDataURL(photoFile);
+                    } else {
+                        if (this.isEditing) {
+                            const existingLocation = this.data.find(p => p.id === this.editingId);
+                            locationData.photo = existingLocation?.photo || '';
+                            this.updateLocation(this.editingId, locationData);
+                        } else {
+                            locationData.photo = '';
+                            this.addLocation(locationData);
+                        }
+                        document.getElementById('pudo-modal').style.display = 'none';
+                    }
+                });
+
+                document.getElementById('proximity-check-btn')?.addEventListener('click', () => {
+                    this.checkProximity();
+                });
+
+                document.getElementById('coverage-analysis-btn')?.addEventListener('click', () => {
+                    this.analyzeCoverage();
+                });
+
+                document.getElementById('density-analysis-btn')?.addEventListener('click', () => {
+                    this.analyzeDensity();
+                });
+
+                document.getElementById('search-input').addEventListener('input', (e) => {
+                    this.searchLocations(e.target.value);
+                });
+
+                document.getElementById('show-all-btn').addEventListener('click', () => {
+                    document.getElementById('search-input').value = '';
+                    document.querySelectorAll('.list-item').forEach(item => item.classList.remove('active'));
+                    this.showAllMarkers();
+                });
+
+                document.getElementById('export-btn').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                document.getElementById('refresh-btn').addEventListener('click', () => {
+                    location.reload();
+                });
+
+                window.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('modal')) {
+                        e.target.style.display = 'none';
+                    }
+                });
+
+                window.pudoSystem = this;
+            }
+        }
+    </script>
+</body>
+</html>
